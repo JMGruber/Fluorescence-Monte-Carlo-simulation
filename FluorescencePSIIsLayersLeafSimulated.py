@@ -1,7 +1,6 @@
 import random
 import matplotlib.pyplot as plt
 
-#trial change for GitHub
 def chunks(l, numberOfGroups):
     """
     Yield n successive chunks from l.
