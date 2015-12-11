@@ -325,7 +325,7 @@ size = 1
 layer = 1
 photonFluxList = range(200,1001,200)
 
-projectPath = '/home/ludwik/Documents/python/Monte-Carlo/Layers and size/'
+projectPath = 'D:/Dropbox/Python course/Leaf Project Ludwik/'
 def Simulate(numPSIIs, timeSteps, trialsNum, photonFluxList, size, layer):
     for light in photonFluxList:
         print 'Light: %i' % light
