@@ -72,7 +72,7 @@ class PSII(object):
         if self.state == "closed excited":
             if random.random() <= self.probabilityDecay:
                 self.state = "closed ground"
-                if random.random() <= self.probabilityFluorescence:	
+                if random.random() <= self.probabilityFluorescence/self.probabilityDecay:	#important change to get more fl!
                     return True
                 else:
                     return False                                    #radiationless decay
@@ -265,7 +265,7 @@ def simulatingLeaf(numPSIIs = 1000, timeSteps = 100, trialsNum = 1, size = 1, ph
     for trial in range(0, trialsNum):
         PSIIs = []                                      #Creating PSIIs
         for nr in range(0, numPSIIs):
-            PSIIs.append(PSII(size = size, state = "ground", photonFlux = photonFlux, leafArea = 10000, probabilityExcited = 0.8, probabilityFluorescence = 0.05, probabilityRadiationless = 0.15, probablilityAnihilation = 0.01))
+            PSIIs.append(PSII(size = size, state = "ground", photonFlux = photonFlux, leafArea = 10000, probabilityExcited = 1, probabilityFluorescence = 0.05, probabilityRadiationless = 0.1, probablilityAnihilation = 1))
         simulatedLeaf = Leaf(PSIIs, layers)             #Creating the leaf
         simulatedLeaf.assignPSIIToLayers()              #Creating layers in the leaf
         simulatedLeaf.createLayers()
@@ -318,11 +318,11 @@ def simulatingLeaf(numPSIIs = 1000, timeSteps = 100, trialsNum = 1, size = 1, ph
 #plt.show()
 
 numPSIIs = 10000
-timeSteps = 10
+timeSteps = 100
 trialsNum = 1
 size = 1
 layer = 1
-photonFluxList = range(200,1001,200)
+photonFluxList = range(500,1001,500)
 
 projectPath = 'D:/Dropbox/Python course/Leaf Project Ludwik/'
 def Simulate(numPSIIs, timeSteps, trialsNum, photonFluxList, size, layer):
@@ -332,7 +332,7 @@ def Simulate(numPSIIs, timeSteps, trialsNum, photonFluxList, size, layer):
     plt.legend(loc = "best", fontsize = 'small')
     plt.xlabel("Time [a.u.]")
     plt.ylabel("Ft [counts]")
-    fileName = str('numPSIIs%i timeSteps%i trialsNum%i size%.2f layers%i lightDependency.svg' % (numPSIIs, timeSteps, trialsNum, size, layer))
+    fileName = str('numPSIIs%i timeSteps%i trialsNum%i size%.2f layers%i lightDependency.png' % (numPSIIs, timeSteps, trialsNum, size, layer))
     plt.savefig(projectPath + fileName, width = 30, height = 8)
     plt.close()
 
