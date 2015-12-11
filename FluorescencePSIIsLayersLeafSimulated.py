@@ -14,7 +14,7 @@ class PSII(object):
     Representation of a PSII particle
     """   
 
-    def __init__(self, layer = 1, size = 1, state = "ground", photonFlux = 1000, leafArea = 1000, probabilityExcited = 0.1, probabilityFluorescence = 0.05, probabilityRadiationless = 0.1, probablilityAnihilation = 0.01):
+    def __init__(self, layer = 1, size = 1, state = "ground", photonFlux = 1000, leafArea = 1000, probabilityFluorescence = 0.05, probabilityRadiationless = 0.1, probablilityAnihilation = 0.01):
         """
 
         Initialize a PSII instance, saves all parameters as attributes of the instance.
@@ -24,7 +24,6 @@ class PSII(object):
             size: int representing size of the PSII
             state: str representing the state of PSII accepted values "ground", "closed ground" or "closed excited"
             photonFlux: int representing the number of photons that are appearing in one light: "on" event
-            probabilityExcited: float in the range 0-1 representing the probability of an absorbed photon to promote the PSII reaction center
             probabilityFluorescence: float in the range 0-1 representing the probability of a closed excited RC to fluoresce a photon
             probabilityRadiationless: float in the range 0-1 representing the probability of a closed excited RC to decay non-radiatively through Internal Conversion or Intersystem Crossing
             probablilityAnihilation: float in the range 0-1 representing the probability of a closed excited RC to decay to the closed ground state during a double excitation event
@@ -42,7 +41,6 @@ class PSII(object):
         self.absCrossection = self.size/float(self.leafArea)
         self.probabilityAbsorbed = self.photonFlux * self.absCrossection
 
-        self.probabilityExcited = probabilityExcited ##What exactly does that mean?
         self.probabilityFluorescence = probabilityFluorescence
         self.probabilityRadiationless = probabilityRadiationless        
         self.probabilityDecay = probabilityFluorescence + probabilityRadiationless
@@ -100,26 +98,24 @@ class PSII(object):
 
         if light == "on":         
             Absorbed = False
-            if self.state == "closed excited":                 #Radiationless decay if the light is not absorbed   
-                return Absorbed, self.doesFluoresce()
-
             if random.random() <= self.probabilityAbsorbed:
                 Absorbed = True
                 if self.state == "ground":
                     self.state = "closed ground"
                     return Absorbed, False
                 if self.state == "closed ground":
-                    if random.random() <= self.probabilityExcited: #probability to absorb should be the same for both events of absorption!
                         self.state = "closed excited"
                         return Absorbed, self.doesFluoresce()
                 if self.state == "closed excited":
                     if random.random() <= self.probablilityAnihilation: #in case of a second absorbed photon this probability should be close to 1
-                        self.state = "closed ground"
-                        return Absorbed, False
-                else:
-                    return Absorbed, False
+                        return Absorbed, self.doesFluoresce()
+                    else:
+                        return Absorbed, self.doesFluoresce()
             else:
-                return False, False  
+                if self.state == "closed excited":
+                    return False, self.doesFluoresce() 
+                else:   
+                    return False, False  
 
 class Layer(object):
     """
@@ -164,7 +160,7 @@ class Layer(object):
         for psii in PSIIs:
             psii.updatePhotonFlux(PhotonFlux)
             if light == "on":
-                if psii.probabilityAbsorbed < 1: #but it is one right now...
+                if psii.probabilityAbsorbed < 1: 
                     Absorbed, Fluoresced = psii.update(light)
                     self.updateAbsorbedFluorescedCount(Absorbed, Fluoresced)
 
@@ -265,7 +261,7 @@ def simulatingLeaf(numPSIIs = 1000, timeSteps = 100, trialsNum = 1, size = 1, ph
     for trial in range(0, trialsNum):
         PSIIs = []                                      #Creating PSIIs
         for nr in range(0, numPSIIs):
-            PSIIs.append(PSII(size = size, state = "ground", photonFlux = photonFlux, leafArea = 10000, probabilityExcited = 1, probabilityFluorescence = 0.05, probabilityRadiationless = 0.1, probablilityAnihilation = 1))
+            PSIIs.append(PSII(size = size, state = "ground", photonFlux = photonFlux, leafArea = 10000, probabilityFluorescence = 0.3, probabilityRadiationless = 0.7, probablilityAnihilation = 0))
         simulatedLeaf = Leaf(PSIIs, layers)             #Creating the leaf
         simulatedLeaf.assignPSIIToLayers()              #Creating layers in the leaf
         simulatedLeaf.createLayers()
@@ -318,11 +314,11 @@ def simulatingLeaf(numPSIIs = 1000, timeSteps = 100, trialsNum = 1, size = 1, ph
 #plt.show()
 
 numPSIIs = 10000
-timeSteps = 100
+timeSteps = 300
 trialsNum = 1
 size = 1
 layer = 1
-photonFluxList = range(500,1001,500)
+photonFluxList =range(100,1001,100)
 
 projectPath = 'D:/Dropbox/Python course/Leaf Project Ludwik/'
 def Simulate(numPSIIs, timeSteps, trialsNum, photonFluxList, size, layer):
@@ -343,73 +339,74 @@ for time in range(0, len(selectedTimepoint1)):
     selectedTimepoint1[time] /= trialsNum
 
 
-#selectedTimepoint = []
-#size = 0.5
-#layer = 1
-#Simulate(numPSIIs, timeSteps, trialsNum, photonFluxList, size, layer)
-#selectedTimepoint2 = selectedTimepoint 
-#for time in range(0, len(selectedTimepoint1)):
-#    selectedTimepoint2[time] /= float(photonFluxList[time])
-#    selectedTimepoint2[time] /= trialsNum
-#
-#selectedTimepoint = []
-#
-#
-#size = 1
-#layer = 2
-#Simulate(numPSIIs, timeSteps, trialsNum, photonFluxList, size, layer)
-#
-#
-#selectedTimepoint3 = selectedTimepoint 
-#for time in range(0, len(selectedTimepoint1)):
-#    selectedTimepoint3[time] /= float(photonFluxList[time])
-#    selectedTimepoint3[time] /= trialsNum
-#
-#selectedTimepoint = []
-#size = 0.5
-#layer = 2
-#Simulate(numPSIIs, timeSteps, trialsNum, photonFluxList, size, layer)
-#
-#selectedTimepoint4 = selectedTimepoint 
-#for time in range(0, len(selectedTimepoint1)):
-#    selectedTimepoint4[time] /= float(photonFluxList[time])
-#    selectedTimepoint4[time] /= trialsNum
-#
-#selectedTimepoint = []
-#
-#size = 1
-#layer = 3
-#Simulate(numPSIIs, timeSteps, trialsNum, photonFluxList, size, layer)
-#
-#selectedTimepoint5 = selectedTimepoint 
-#for time in range(0, len(selectedTimepoint1)):
-#    selectedTimepoint5[time] /= float(photonFluxList[time])
-#    selectedTimepoint5[time] /= trialsNum
-#
-#selectedTimepoint = []
-#size = 0.5
-#layer = 3
-#Simulate(numPSIIs, timeSteps, trialsNum, photonFluxList, size, layer)
-#
-#selectedTimepoint6 = selectedTimepoint 
-#for time in range(0, len(selectedTimepoint1)):
-#    selectedTimepoint6[time] /= float(photonFluxList[time])
-#    selectedTimepoint6[time] /= trialsNum    
-#
-#plt.plot(photonFluxList, selectedTimepoint1, label = "PSII size = 1 layers = 1")
-#plt.plot(photonFluxList, selectedTimepoint2, label = "PSII size = 0.5 layers = 1")
-#
-#plt.plot(photonFluxList, selectedTimepoint3, label = "PSII size = 1 layers = 2")
-#plt.plot(photonFluxList, selectedTimepoint4, label = "PSII size = 0.5 layers = 2")
-#
-#plt.plot(photonFluxList, selectedTimepoint5, label = "PSII size = 1 layers = 3")
-#plt.plot(photonFluxList, selectedTimepoint6, label = "PSII size = 0.5 layers = 3")
-#plt.legend(loc = "best", fontsize = 'x-small')
-#plt.xlabel("PPFD")
-#plt.ylabel("F[t=10]/PPFD")
-#fileName = str('Ft to PPFD Normalised LightDependency trialsNum = %i.svg' % trialsNum)
-#plt.savefig(projectPath + fileName, width = 20, height = 7)
-#plt.close()
+selectedTimepoint = []
+timeSteps = 300
+size = 0.5
+layer = 1
+Simulate(numPSIIs, timeSteps, trialsNum, photonFluxList, size, layer)
+selectedTimepoint2 = selectedTimepoint 
+for time in range(0, len(selectedTimepoint1)):
+    selectedTimepoint2[time] /= float(photonFluxList[time])
+    selectedTimepoint2[time] /= trialsNum
+
+selectedTimepoint = []
+
+
+size = 1
+layer = 2
+Simulate(numPSIIs, timeSteps, trialsNum, photonFluxList, size, layer)
+
+
+selectedTimepoint3 = selectedTimepoint 
+for time in range(0, len(selectedTimepoint1)):
+    selectedTimepoint3[time] /= float(photonFluxList[time])
+    selectedTimepoint3[time] /= trialsNum
+
+selectedTimepoint = []
+size = 0.5
+layer = 2
+Simulate(numPSIIs, timeSteps, trialsNum, photonFluxList, size, layer)
+
+selectedTimepoint4 = selectedTimepoint 
+for time in range(0, len(selectedTimepoint1)):
+    selectedTimepoint4[time] /= float(photonFluxList[time])
+    selectedTimepoint4[time] /= trialsNum
+
+selectedTimepoint = []
+
+size = 1
+layer = 3
+Simulate(numPSIIs, timeSteps, trialsNum, photonFluxList, size, layer)
+
+selectedTimepoint5 = selectedTimepoint 
+for time in range(0, len(selectedTimepoint1)):
+    selectedTimepoint5[time] /= float(photonFluxList[time])
+    selectedTimepoint5[time] /= trialsNum
+
+selectedTimepoint = []
+size = 0.5
+layer = 3
+Simulate(numPSIIs, timeSteps, trialsNum, photonFluxList, size, layer)
+
+selectedTimepoint6 = selectedTimepoint 
+for time in range(0, len(selectedTimepoint1)):
+    selectedTimepoint6[time] /= float(photonFluxList[time])
+    selectedTimepoint6[time] /= trialsNum    
+
+plt.plot(photonFluxList, selectedTimepoint1, label = "PSII size = 1 layers = 1")
+plt.plot(photonFluxList, selectedTimepoint2, label = "PSII size = 0.5 layers = 1")
+
+plt.plot(photonFluxList, selectedTimepoint3, label = "PSII size = 1 layers = 2")
+plt.plot(photonFluxList, selectedTimepoint4, label = "PSII size = 0.5 layers = 2")
+
+plt.plot(photonFluxList, selectedTimepoint5, label = "PSII size = 1 layers = 3")
+plt.plot(photonFluxList, selectedTimepoint6, label = "PSII size = 0.5 layers = 3")
+plt.legend(loc = "best", fontsize = 'x-small')
+plt.xlabel("PPFD")
+plt.ylabel("F[t=10]/PPFD")
+fileName = str('Ft to PPFD Normalised LightDependency trialsNum = %i.svg' % trialsNum)
+plt.savefig(projectPath + fileName, width = 20, height = 7)
+plt.close()
 
 
 
@@ -432,5 +429,5 @@ for time in range(0, len(selectedTimepoint1)):
 #numPSIIs = 10
 #PSIIs = []
 #for nr in range(0, numPSIIs):
-#    PSIIs.append(PSII(size = size, state = "ground", photonFlux = photonFlux, leafArea = 1000, probabilityExcited = 0.1, probabilityFluorescence = 0.2, probabilityRadiationless = 0.05, probablilityAnihilation = 0.01))
+#    PSIIs.append(PSII(size = size, state = "ground", photonFlux = photonFlux, leafArea = 1000, probabilityFluorescence = 0.2, probabilityRadiationless = 0.05, probablilityAnihilation = 0.01))
 #    
