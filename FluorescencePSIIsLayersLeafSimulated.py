@@ -26,7 +26,7 @@ class PSII(object):
             photonFlux: int representing the number of photons that are appearing in one light: "on" event
             probabilityExcited: float in the range 0-1 representing the probability of an absorbed photon to promote the PSII reaction center
             probabilityFluorescence: float in the range 0-1 representing the probability of a closed excited RC to fluoresce a photon
-            probabilityRadiationless: float in the range 0-1 representing the probability of a closed excited RC to decay non-radiatively through an InterSystem Crossing
+            probabilityRadiationless: float in the range 0-1 representing the probability of a closed excited RC to decay non-radiatively through Internal Conversion or Intersystem Crossing
             probablilityAnihilation: float in the range 0-1 representing the probability of a closed excited RC to decay to the closed ground state during a double excitation event
 
         Values calculated:
@@ -42,9 +42,9 @@ class PSII(object):
         self.absCrossection = self.size/float(self.leafArea)
         self.probabilityAbsorbed = self.photonFlux * self.absCrossection
 
-        self.probabilityExcited = probabilityExcited
+        self.probabilityExcited = probabilityExcited ##What exactly does that mean?
         self.probabilityFluorescence = probabilityFluorescence
-        self.probabilityRadiationless = probabilityRadiationless       
+        self.probabilityRadiationless = probabilityRadiationless        
         self.probabilityDecay = probabilityFluorescence + probabilityRadiationless
 
         self.probablilityAnihilation = probablilityAnihilation
@@ -57,13 +57,13 @@ class PSII(object):
         input: int
         """    
         self.photonFlux = PhotonFlux
-        self.absCrossection = self.size/float(self.leafArea)
+        self.absCrossection = self.size/float(self.leafArea) #Why is that dependent?
         self.probabilityAbsorbed = self.photonFlux * self.absCrossection
 
     def doesFluoresce(self):
         """
         Checks if the photon will be fluoresced from a PSII.
-        The excited Reaction Center of a PSII can decay in two manners fluorescence or non-radiative decay (ISC).
+        The excited Reaction Center of a PSII can decay in two manners fluorescence or non-radiative decay.
             If an RC fluoresced it decays to a ground state.
             Otherwise it decays non-radiatevely
 
@@ -92,11 +92,11 @@ class PSII(object):
         Input:
             light: str "on" or "off" representing if the photon flux will be hitting the RCs during a timestep
 
-        returns a pair of booleans: True/False if a photon is absorbed and True/False if a photon is fluoresced 
+        returns a pair of booleans: True/False if a photon is absorbed and True/False if a photon is fluoresced ??
         """            
         if light == "off":
             if self.state == "closed excited":
-                return self.doesFluoresce()
+                return self.doesFluoresce() #pair of boolean?
 
         if light == "on":         
             Absorbed = False
@@ -109,11 +109,11 @@ class PSII(object):
                     self.state = "closed ground"
                     return Absorbed, False
                 if self.state == "closed ground":
-                    if random.random() <= self.probabilityExcited:
+                    if random.random() <= self.probabilityExcited: #probability to absorb should be the same for both events of absorption!
                         self.state = "closed excited"
                         return Absorbed, self.doesFluoresce()
                 if self.state == "closed excited":
-                    if random.random() <= self.probablilityAnihilation:
+                    if random.random() <= self.probablilityAnihilation: #in case of a second absorbed photon this probability should be close to 1
                         self.state = "closed ground"
                         return Absorbed, False
                 else:
@@ -164,12 +164,12 @@ class Layer(object):
         for psii in PSIIs:
             psii.updatePhotonFlux(PhotonFlux)
             if light == "on":
-                if psii.probabilityAbsorbed < 1:
+                if psii.probabilityAbsorbed < 1: #but it is one right now...
                     Absorbed, Fluoresced = psii.update(light)
                     self.updateAbsorbedFluorescedCount(Absorbed, Fluoresced)
 
                 else:
-                    for excitation in range(0,int(psii.probabilityAbsorbed)):
+                    for excitation in range(0,int(psii.probabilityAbsorbed)): #does that work?? only if prob is one! and then it does it twice
                         Absorbed, Fluoresced = psii.update(light)
                         self.updateAbsorbedFluorescedCount(Absorbed, Fluoresced)
 
@@ -343,73 +343,73 @@ for time in range(0, len(selectedTimepoint1)):
     selectedTimepoint1[time] /= trialsNum
 
 
-selectedTimepoint = []
-size = 0.5
-layer = 1
-Simulate(numPSIIs, timeSteps, trialsNum, photonFluxList, size, layer)
-selectedTimepoint2 = selectedTimepoint 
-for time in range(0, len(selectedTimepoint1)):
-    selectedTimepoint2[time] /= float(photonFluxList[time])
-    selectedTimepoint2[time] /= trialsNum
-
-selectedTimepoint = []
-
-
-size = 1
-layer = 2
-Simulate(numPSIIs, timeSteps, trialsNum, photonFluxList, size, layer)
-
-
-selectedTimepoint3 = selectedTimepoint 
-for time in range(0, len(selectedTimepoint1)):
-    selectedTimepoint3[time] /= float(photonFluxList[time])
-    selectedTimepoint3[time] /= trialsNum
-
-selectedTimepoint = []
-size = 0.5
-layer = 2
-Simulate(numPSIIs, timeSteps, trialsNum, photonFluxList, size, layer)
-
-selectedTimepoint4 = selectedTimepoint 
-for time in range(0, len(selectedTimepoint1)):
-    selectedTimepoint4[time] /= float(photonFluxList[time])
-    selectedTimepoint4[time] /= trialsNum
-
-selectedTimepoint = []
-
-size = 1
-layer = 3
-Simulate(numPSIIs, timeSteps, trialsNum, photonFluxList, size, layer)
-
-selectedTimepoint5 = selectedTimepoint 
-for time in range(0, len(selectedTimepoint1)):
-    selectedTimepoint5[time] /= float(photonFluxList[time])
-    selectedTimepoint5[time] /= trialsNum
-
-selectedTimepoint = []
-size = 0.5
-layer = 3
-Simulate(numPSIIs, timeSteps, trialsNum, photonFluxList, size, layer)
-
-selectedTimepoint6 = selectedTimepoint 
-for time in range(0, len(selectedTimepoint1)):
-    selectedTimepoint6[time] /= float(photonFluxList[time])
-    selectedTimepoint6[time] /= trialsNum    
-
-plt.plot(photonFluxList, selectedTimepoint1, label = "PSII size = 1 layers = 1")
-plt.plot(photonFluxList, selectedTimepoint2, label = "PSII size = 0.5 layers = 1")
-
-plt.plot(photonFluxList, selectedTimepoint3, label = "PSII size = 1 layers = 2")
-plt.plot(photonFluxList, selectedTimepoint4, label = "PSII size = 0.5 layers = 2")
-
-plt.plot(photonFluxList, selectedTimepoint5, label = "PSII size = 1 layers = 3")
-plt.plot(photonFluxList, selectedTimepoint6, label = "PSII size = 0.5 layers = 3")
-plt.legend(loc = "best", fontsize = 'x-small')
-plt.xlabel("PPFD")
-plt.ylabel("F[t=10]/PPFD")
-fileName = str('Ft to PPFD Normalised LightDependency trialsNum = %i.svg' % trialsNum)
-plt.savefig(projectPath + fileName, width = 20, height = 7)
-plt.close()
+#selectedTimepoint = []
+#size = 0.5
+#layer = 1
+#Simulate(numPSIIs, timeSteps, trialsNum, photonFluxList, size, layer)
+#selectedTimepoint2 = selectedTimepoint 
+#for time in range(0, len(selectedTimepoint1)):
+#    selectedTimepoint2[time] /= float(photonFluxList[time])
+#    selectedTimepoint2[time] /= trialsNum
+#
+#selectedTimepoint = []
+#
+#
+#size = 1
+#layer = 2
+#Simulate(numPSIIs, timeSteps, trialsNum, photonFluxList, size, layer)
+#
+#
+#selectedTimepoint3 = selectedTimepoint 
+#for time in range(0, len(selectedTimepoint1)):
+#    selectedTimepoint3[time] /= float(photonFluxList[time])
+#    selectedTimepoint3[time] /= trialsNum
+#
+#selectedTimepoint = []
+#size = 0.5
+#layer = 2
+#Simulate(numPSIIs, timeSteps, trialsNum, photonFluxList, size, layer)
+#
+#selectedTimepoint4 = selectedTimepoint 
+#for time in range(0, len(selectedTimepoint1)):
+#    selectedTimepoint4[time] /= float(photonFluxList[time])
+#    selectedTimepoint4[time] /= trialsNum
+#
+#selectedTimepoint = []
+#
+#size = 1
+#layer = 3
+#Simulate(numPSIIs, timeSteps, trialsNum, photonFluxList, size, layer)
+#
+#selectedTimepoint5 = selectedTimepoint 
+#for time in range(0, len(selectedTimepoint1)):
+#    selectedTimepoint5[time] /= float(photonFluxList[time])
+#    selectedTimepoint5[time] /= trialsNum
+#
+#selectedTimepoint = []
+#size = 0.5
+#layer = 3
+#Simulate(numPSIIs, timeSteps, trialsNum, photonFluxList, size, layer)
+#
+#selectedTimepoint6 = selectedTimepoint 
+#for time in range(0, len(selectedTimepoint1)):
+#    selectedTimepoint6[time] /= float(photonFluxList[time])
+#    selectedTimepoint6[time] /= trialsNum    
+#
+#plt.plot(photonFluxList, selectedTimepoint1, label = "PSII size = 1 layers = 1")
+#plt.plot(photonFluxList, selectedTimepoint2, label = "PSII size = 0.5 layers = 1")
+#
+#plt.plot(photonFluxList, selectedTimepoint3, label = "PSII size = 1 layers = 2")
+#plt.plot(photonFluxList, selectedTimepoint4, label = "PSII size = 0.5 layers = 2")
+#
+#plt.plot(photonFluxList, selectedTimepoint5, label = "PSII size = 1 layers = 3")
+#plt.plot(photonFluxList, selectedTimepoint6, label = "PSII size = 0.5 layers = 3")
+#plt.legend(loc = "best", fontsize = 'x-small')
+#plt.xlabel("PPFD")
+#plt.ylabel("F[t=10]/PPFD")
+#fileName = str('Ft to PPFD Normalised LightDependency trialsNum = %i.svg' % trialsNum)
+#plt.savefig(projectPath + fileName, width = 20, height = 7)
+#plt.close()
 
 
 
